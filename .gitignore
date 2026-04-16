@@ -1,0 +1,32 @@
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Arquivos temporários de análise
+video_analisado.mp4
+audio_analisado.wav
+audio_convertido.wav
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Executáveis do ffmpeg (cada um instala o seu)
+ffmpeg.exe
+ffprobe.exe
+ffplay.exe
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp

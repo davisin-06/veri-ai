@@ -1,0 +1,12 @@
+flask
+flask-cors
+yt-dlp
+transformers
+torch
+torchvision
+opencv-python
+librosa
+soundfile
+numpy
+Pillow
+werkzeug
