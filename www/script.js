@@ -1,11 +1,4 @@
-﻿// -----------------------------------------------
-// CONFIGURAÃ‡ÃƒO â€” troque pela URL do seu servidor
-// em produÃ§Ã£o. Em desenvolvimento local use
-// http://10.0.2.2:5000 (emulador Android)
-// ou o IP da sua mÃ¡quina ex: http://192.168.1.10:5000
-// -----------------------------------------------
-const API_BASE = "http://192.168.15.5:5000";
-
+﻿const API_BASE = "https://davifricks-veri-ai.hf.space";
 
 // -----------------------------------------------
 // Modal de Tutorial
@@ -71,8 +64,8 @@ function renderResult(data) {
     svg.innerHTML = '<circle cx="11" cy="11" r="8" stroke="#4cd97b" stroke-width="1.5"/><path d="M7.5 11l2.5 2.5 4.5-4.5" stroke="#4cd97b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
   }
 
-  document.getElementById("res-veredito").textContent = isIA ? "Provavelmente gerado por IA" : "Parece conte\u00FAdo real";
-  document.getElementById("res-confianca").textContent = "Confian\u00E7a " + data.confianca;
+  document.getElementById("res-veredito").textContent     = isIA ? "Provavelmente gerado por IA" : "Parece conteúdo real";
+  document.getElementById("res-confianca").textContent    = "Confiança " + data.confianca;
   document.getElementById("res-probabilidade").className  = "num " + (isIA ? "ia" : "real");
   document.getElementById("res-probabilidade").textContent = data.probabilidade_ia + "%";
   document.getElementById("res-video").textContent        = modoAudio ? "N/A" : data.score_video + "%";
@@ -91,23 +84,11 @@ function limparTela() {
 }
 
 // -----------------------------------------------
-// FunÃ§Ã£o genÃ©rica de fetch com tratamento de erro
-// -----------------------------------------------
-async function enviarRequisicao(endpoint, opcoes) {
-  const res = await fetch(API_BASE + endpoint, opcoes);
-  if (!res.ok) {
-    const erro = await res.json().catch(() => ({}));
-    throw new Error(erro.erro || "Erro do servidor: " + res.status);
-  }
-  return res.json();
-}
-
-// -----------------------------------------------
-// Conecta os botÃµes ao carregar a pÃ¡gina
+// Conecta os botões ao carregar a página
 // -----------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
 
-  // BotÃµes de tutorial
+  // Botões de tutorial
   ["help-btn-link", "help-btn-arquivo", "help-btn-audio"].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.addEventListener("click", abrirModal);
@@ -125,48 +106,60 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // BotÃµes de limpar
+  // Botões de limpar
   document.querySelectorAll(".clean-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const urlInput   = document.getElementById("video-url");
-      const fileInput  = document.getElementById("file-input");
+      const urlInput = document.getElementById("video-url");
+      const fileInput = document.getElementById("file-input");
       const audioInput = document.getElementById("audio-input");
-      if (urlInput)   urlInput.value  = "";
-      if (fileInput)  fileInput.value = "";
+      if (urlInput) urlInput.value = "";
+      if (fileInput) fileInput.value = "";
       if (audioInput) audioInput.value = "";
       limparTela();
     });
   });
 
-  // â”€â”€ BotÃ£o de link â”€â”€
+  // Botão de link
   document.getElementById("analyze-btn").addEventListener("click", async () => {
     const url = document.getElementById("video-url").value.trim();
-    if (!url) { showError("Por favor, insira um link de vi­deo."); return; }
+    if (!url) { showError("Por favor, insira um link de vídeo."); return; }
 
     limparTela();
     const btn = document.getElementById("analyze-btn");
     btn.disabled = true;
-    showLoading(true, "Analisando vi­deo...");
+    showLoading(true, "Analisando vídeo...");
 
     try {
-      const data = await enviarRequisicao("/analyze", {
+      const res = await fetch(API_BASE + "/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url: url })
       });
+
+      if (!res.ok) {
+        const erro = await res.json();
+        throw new Error(erro.erro || "Erro do servidor: " + res.status);
+      }
+
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error("O servidor retornou uma resposta inválida."); }
+
       renderResult(data);
+
     } catch (err) {
       showError("Erro ao analisar: " + err.message);
+      console.error("Detalhe do erro:", err);
     } finally {
       btn.disabled = false;
       showLoading(false);
     }
   });
 
-  // â”€â”€ BotÃ£o de arquivo MP4 â”€â”€
+  // Botão de arquivo MP4
   document.getElementById("analyze-file-btn").addEventListener("click", async () => {
     const input = document.getElementById("file-input");
-    if (!input.files[0]) { showError("Selecione um arquivo de vi­deo."); return; }
+    if (!input.files[0]) { showError("Selecione um arquivo de vídeo."); return; }
 
     limparTela();
     const formData = new FormData();
@@ -174,26 +167,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btn = document.getElementById("analyze-file-btn");
     btn.disabled = true;
-    showLoading(true, "Analisando vi­deo...");
+    showLoading(true, "Analisando vídeo...");
 
     try {
-      const data = await enviarRequisicao("/analyze-file", {
+      const res = await fetch(API_BASE + "/analyze-file", {
         method: "POST",
         body: formData
       });
+
+      if (!res.ok) {
+        const erro = await res.json();
+        throw new Error(erro.erro || "Erro do servidor: " + res.status);
+      }
+
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error("O servidor retornou uma resposta inválida."); }
+
       renderResult(data);
+
     } catch (err) {
       showError("Erro ao analisar: " + err.message);
+      console.error("Detalhe do erro:", err);
     } finally {
       btn.disabled = false;
       showLoading(false);
     }
   });
 
-  // â”€â”€ BotÃ£o de Ã¡udio â”€â”€
+  // Botão de áudio
   document.getElementById("analyze-audio-btn").addEventListener("click", async () => {
     const input = document.getElementById("audio-input");
-    if (!input.files[0]) { showError("Selecione um arquivo de Ã¡udio."); return; }
+    if (!input.files[0]) { showError("Selecione um arquivo de áudio."); return; }
 
     limparTela();
     const formData = new FormData();
@@ -201,16 +206,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btn = document.getElementById("analyze-audio-btn");
     btn.disabled = true;
-    showLoading(true, "Analisando audio...");
+    showLoading(true, "Analisando áudio...");
 
     try {
-      const data = await enviarRequisicao("/analyze-audio", {
+      const res = await fetch(API_BASE + "/analyze-audio", {
         method: "POST",
         body: formData
       });
+
+      if (!res.ok) {
+        const erro = await res.json();
+        throw new Error(erro.erro || "Erro do servidor: " + res.status);
+      }
+
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error("O servidor retornou uma resposta inválida."); }
+
       renderResult(data);
+
     } catch (err) {
       showError("Erro ao analisar: " + err.message);
+      console.error("Detalhe do erro:", err);
     } finally {
       btn.disabled = false;
       showLoading(false);
@@ -220,11 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Registra o Service Worker para PWA
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(err => {
-      console.log("Service Worker nÃ£o registrado:", err);
+      console.log("Service Worker não registrado:", err);
     });
   }
 
 });
-
-
-
