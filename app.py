@@ -1,5 +1,3 @@
-import shutil
-
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -24,10 +22,6 @@ import librosa, soundfile as sf
 # -----------------------------------------------
 PASTA_PROJETO = os.environ.get("VERIAI_PATH", os.path.dirname(os.path.abspath(__file__)))
 
-BASE_DIR = PASTA_PROJETO
-FFMPEG_BIN = shutil.which("ffmpeg") or os.path.join(BASE_DIR, "ffmpeg")
-FFPROBE_BIN = shutil.which("ffprobe") or os.path.join(BASE_DIR, "ffprobe")
-
 # Detecta o nome do executável do ffmpeg (Windows usa .exe, Linux/Mac não)
 FFPROBE = os.path.join(PASTA_PROJETO, "ffprobe.exe") if os.name == "nt" else "ffprobe"
 FFMPEG_LOCATION = PASTA_PROJETO if os.name == "nt" else None
@@ -46,11 +40,11 @@ CORS(app)
 # -----------------------------------------------
 @app.route("/")
 def index():
-    return send_from_directory(os.path.join(PASTA_PROJETO, "www"), "index.html")
+    return send_from_directory(PASTA_PROJETO, "index.html")
 
 @app.route("/<path:filename>")
 def static_files(filename):
-    return send_from_directory(os.path.join(PASTA_PROJETO, "www"), filename)
+    return send_from_directory(PASTA_PROJETO, filename)
 
 
 # -----------------------------------------------
@@ -84,11 +78,18 @@ def download_video(url: str) -> str:
         os.remove(caminho)
 
     cookies_path = os.path.join(PASTA_PROJETO, "cookies.txt")
+    print(f"[DEBUG] PASTA_PROJETO={PASTA_PROJETO}")
+    print(f"[DEBUG] cookies_path={cookies_path}")
+    print(f"[DEBUG] cookies existe={os.path.exists(cookies_path)}")
+    try:
+        print(f"[DEBUG] arquivos em /app: {os.listdir('/app')}")
+    except Exception:
+        pass
+
     opcoes = {
-        "outtmpl": caminho.replace(".mp4", ".%(ext)s"),
+        "outtmpl": os.path.join(PASTA_PROJETO, "video_analisado.%(ext)s"),
         "format": "bestvideo[height<=480]+bestaudio/bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
-        "ffmpeg_location": os.path.dirname(FFMPEG_BIN) if FFMPEG_BIN else BASE_DIR,
         "socket_timeout": 30,
         "cookiefile": cookies_path if os.path.exists(cookies_path) else None,
     }
