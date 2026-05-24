@@ -1,0 +1,15 @@
+{
+  "appId": "com.veriai.app",
+  "appName": "VeriAI",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true,
+    "htmlCharset": "UTF-8"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

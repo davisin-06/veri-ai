@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriAI — Detector de Conteúdo IA</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#f7ce2a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="VeriAI"/>
+
+  <link rel="stylesheet" href="style.css"/>
+  
+</head>
+<body>
+
+  <div class="header">
+        <div class="vermelho"></div>
+        <div class="branco"></div>
+        <div class="amarelo"></div>
+        <div class="azul"></div>
+  </div>
+
+  <div class="main">
+
+      <div class="titulo">
+          <h1>É real ou feito por</h1>
+          <h1 class="texto_amarelo">Inteligência Artificial?</h1> 
+      </div>
+
+      <!-- Card principal -->
+      <div class="card">
+
+          <!-- Abas -->
+          <div class="tabs">
+            <button class="tab active" id="tab-link"    onclick="setTab('link')">Link</button>
+            <button class="tab"        id="tab-arquivo" onclick="setTab('arquivo')">Arquivo de vídeo</button>
+            <button class="tab"        id="tab-audio"   onclick="setTab('audio')">Áudio</button>
+          </div>
+
+          <!-- Modo link -->
+          <div id="modo-link">
+            <div class="input-label">1. Cole o link aqui</div>
+            <div class="input-row">
+              <input id="video-url" type="text" placeholder="https://..." autocomplete="off"/>
+              <div class="container_btns">
+                <button id="analyze-btn">Analisar</button>
+                <button class="clean-btn">Limpar</button>
+                <button class="help-btn" id="help-btn-link">?</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modo arquivo MP4 -->
+          <div id="modo-arquivo" style="display:none">
+            <div class="input-label">2. Selecione o arquivo de vídeo</div>
+            <div class="input-row">
+              <input id="file-input" type="file" accept=".mp4,.mov,.avi,.mkv"/>
+              <div class="container_btns">
+                <button id="analyze-file-btn">Analisar</button>
+                <button class="clean-btn">Limpar</button>
+                <button class="help-btn" id="help-btn-arquivo">?</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modo áudio -->
+          <div id="modo-audio" style="display:none">
+            <div class="input-label">3. Selecione o arquivo de áudio</div>
+            <div class="input-row">
+              <input id="audio-input" type="file" accept=".mp3,.wav,.ogg,.m4a,.flac"/>
+              <div class="container_btns">
+                <button id="analyze-audio-btn">Analisar</button>
+                <button class="clean-btn">Limpar</button>
+                <button class="help-btn" id="help-btn-audio">?</button>
+              </div>
+            </div>
+          </div>
+
+      </div>
+
+      <!-- Loading -->
+      <div class="card" id="loading">
+          <div class="loading-label">
+            <span id="loading-texto">Analisando...</span>
+            <span>aguarde</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar"></div>
+          </div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="card" id="resultado">
+          <div class="result-label">Resultado da analise</div>
+          <div class="result-main">
+            <div class="result-icon" id="res-icon">
+              <svg id="res-svg" width="22" height="22" viewBox="0 0 22 22" fill="none"></svg>
+            </div>
+            <div class="result-info">
+              <div class="result-veredito" id="res-veredito"></div>
+              <div class="result-confianca" id="res-confianca"></div>
+            </div>
+            <div class="result-percent">
+              <div class="num" id="res-probabilidade"></div>
+              <div class="sub">prob. de IA</div>
+            </div>
+          </div>
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-label">video</div>
+              <div class="metric-value" id="res-video"></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">audio</div>
+              <div class="metric-value" id="res-audio"></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">frames</div>
+              <div class="metric-value" id="res-frames"></div>
+            </div>
+          </div>
+      </div>
+
+      <!-- Erro -->
+      <div id="erro"></div>
+
+  </div>
+
+  <!-- Modal de Tutorial -->
+  <div id="modal-tutorial" class="modal-overlay" style="display:none">
+      <div class="modal-box">
+          <div class="modal-header">
+              <span class="modal-titulo">? o VeriAI</span>
+              <button class="modal-fechar" id="modal-fechar">✕</button>
+          </div>
+          <div class="modal-video-container">
+              <!--
+                Quando tiver o vídeo pronto, substitua o bloco abaixo por:
+
+                YouTube:
+                <iframe src="https://www.youtube.com/embed/SEU_VIDEO_ID"
+                        allowfullscreen></iframe>
+
+                Arquivo local:
+                <video src="tutorial.mp4" controls></video>
+              -->
+              <div class="modal-placeholder">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                      <circle cx="24" cy="24" r="22" stroke="#1E3FB4" stroke-width="2"/>
+                      <path d="M19 16l14 8-14 8V16z" fill="#1E3FB4"/>
+                  </svg>
+                  <p>Vídeo de tutorial em breve</p>
+                  <span>Substitua este bloco pelo link do seu vídeo no index.html</span>
+              </div>
+          </div>
+          <div class="modal-passos">
+              <div class="modal-passo">
+                  <span class="passo-num">1</span>
+                  <span>Escolha o modo — <strong>Link</strong>, <strong>Arquivo MP4</strong> ou <strong>Áudio</strong></span>
+              </div>
+              <div class="modal-passo">
+                  <span class="passo-num">2</span>
+                  <span>Cole o link ou selecione o arquivo que deseja analisar</span>
+              </div>
+              <div class="modal-passo">
+                  <span class="passo-num">3</span>
+                  <span>Clique em <strong>Analisar</strong> e aguarde o resultado</span>
+              </div>
+              <div class="modal-passo">
+                  <span class="passo-num">4</span>
+                  <span>Leia o veredito e os scores de video e audio</span>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+      veri-ai v1.0 — projeto concurso<br/>
+      VeriAI é uma IA e pode cometer erros. Sempre verifique os resultados.
+  </div>
+
+  <div class="header debaixo">
+        <div class="vermelho"></div>
+        <div class="branco"></div>
+        <div class="amarelo"></div>
+        <div class="azul"></div>
+  </div>
+<script src="script.js"></script>
+</body>
+</html>

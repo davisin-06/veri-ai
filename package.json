@@ -1,0 +1,17 @@
+{
+  "name": "veriai",
+  "version": "1.0.0",
+  "description": "VeriAI — Detector de Conteúdo Gerado por IA",
+  "scripts": {
+    "build": "echo 'Sem build necessário'",
+    "sync": "npx cap sync",
+    "open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.1"
+  }
+}

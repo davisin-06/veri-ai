@@ -40,11 +40,11 @@ CORS(app)
 # -----------------------------------------------
 @app.route("/")
 def index():
-    return send_from_directory(PASTA_PROJETO, "index.html")
+    return send_from_directory(os.path.join(PASTA_PROJETO, "www"), "index.html")
 
 @app.route("/<path:filename>")
 def static_files(filename):
-    return send_from_directory(PASTA_PROJETO, filename)
+    return send_from_directory(os.path.join(PASTA_PROJETO, "www"), filename)
 
 
 # -----------------------------------------------
@@ -267,7 +267,39 @@ def analisar_metadados(caminho_video: str) -> float:
 
 
 # -----------------------------------------------
-# FUNÇÃO 10: Calcula score final ponderado
+# FUNÇÃO 10: Detecta a qualidade do vídeo
+# Vídeos de alta qualidade recebem limiar mais alto
+# para evitar falsos positivos (sugestão do Gemini)
+# -----------------------------------------------
+def detectar_qualidade_video(caminho_video: str) -> str:
+    try:
+        cmd = [
+            FFPROBE,
+            "-v", "quiet",
+            "-print_format", "json",
+            "-show_streams",
+            caminho_video
+        ]
+        resultado = subprocess.run(cmd, capture_output=True, text=True)
+        dados = json.loads(resultado.stdout)
+
+        stream = dados["streams"][0]
+        altura  = int(stream.get("height", 0))
+        bitrate = int(stream.get("bit_rate", 0))
+
+        # Considera alta qualidade se:
+        # - resolução 480p+ com bitrate alto (vídeo profissional comprimido)
+        # - OU resolução 720p+ independente do bitrate
+        if altura >= 720 or (altura >= 480 and bitrate > 1500000):
+            return "alta"
+        else:
+            return "normal"
+    except Exception as e:
+        print(f"Erro ao detectar qualidade: {e}")
+        return "normal"
+
+# -----------------------------------------------
+# FUNÇÃO 11: Calcula score final ponderado
 # -----------------------------------------------
 def calcular_score(score_video, score_audio, score_consistencia, score_metadados, tem_audio):
     if tem_audio:
@@ -311,18 +343,24 @@ def analyze():
         score_audio        = analisar_audio(caminho_audio)
         score_consistencia = analisar_consistencia(frames)
         score_metadados    = analisar_metadados(caminho_video)
+        qualidade          = detectar_qualidade_video(caminho_video)
 
         score_final    = calcular_score(score_video, score_audio, score_consistencia, score_metadados, caminho_audio is not None)
         porcentagem_ia = round(score_final * 100, 1)
 
+        # Limiar dinâmico — vídeos de alta qualidade recebem limiar mais alto
+        # para compensar o viés do modelo contra vídeos profissionais reais
+        limiar = 72 if qualidade == "alta" else 65
+
         return jsonify({
             "probabilidade_ia":  porcentagem_ia,
-            "e_ia":              porcentagem_ia > 65,
+            "e_ia":              porcentagem_ia > limiar,
             "confianca":         "alta" if abs(porcentagem_ia - 50) > 25 else "baixa",
             "frames_analisados": len(frames),
             "score_video":       round(score_video * 100, 1),
             "score_audio":       round(score_audio * 100, 1),
             "modo":              "video",
+            "qualidade":         qualidade,
         })
 
     except Exception as e:
@@ -364,18 +402,22 @@ def analyze_file():
         score_audio        = analisar_audio(caminho_audio)
         score_consistencia = analisar_consistencia(frames)
         score_metadados    = analisar_metadados(caminho)
+        qualidade          = detectar_qualidade_video(caminho)
 
         score_final    = calcular_score(score_video, score_audio, score_consistencia, score_metadados, caminho_audio is not None)
         porcentagem_ia = round(score_final * 100, 1)
 
+        limiar = 72 if qualidade == "alta" else 65
+
         return jsonify({
             "probabilidade_ia":  porcentagem_ia,
-            "e_ia":              porcentagem_ia > 65,
+            "e_ia":              porcentagem_ia > limiar,
             "confianca":         "alta" if abs(porcentagem_ia - 50) > 25 else "baixa",
             "frames_analisados": len(frames),
             "score_video":       round(score_video * 100, 1),
             "score_audio":       round(score_audio * 100, 1),
             "modo":              "video",
+            "qualidade":         qualidade,
         })
 
     except Exception as e:
