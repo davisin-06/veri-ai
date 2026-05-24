@@ -77,7 +77,7 @@ def download_video(url: str) -> str:
     if os.path.exists(caminho):
         os.remove(caminho)
 
-    cookies_path = os.path.join(BASE_DIR, "cookies.txt")
+    cookies_path = os.path.join(PASTA_PROJETO, "cookies.txt")
     opcoes = {
         "outtmpl": caminho.replace(".mp4", ".%(ext)s"),
         "format": "bestvideo[height<=480]+bestaudio/bestvideo+bestaudio/best",
