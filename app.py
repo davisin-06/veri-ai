@@ -1,3 +1,5 @@
+import shutil
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -21,6 +23,10 @@ import librosa, soundfile as sf
 # Se não definir, usa a pasta onde o app.py está
 # -----------------------------------------------
 PASTA_PROJETO = os.environ.get("VERIAI_PATH", os.path.dirname(os.path.abspath(__file__)))
+
+BASE_DIR = PASTA_PROJETO
+FFMPEG_BIN = shutil.which("ffmpeg") or os.path.join(BASE_DIR, "ffmpeg")
+FFPROBE_BIN = shutil.which("ffprobe") or os.path.join(BASE_DIR, "ffprobe")
 
 # Detecta o nome do executável do ffmpeg (Windows usa .exe, Linux/Mac não)
 FFPROBE = os.path.join(PASTA_PROJETO, "ffprobe.exe") if os.name == "nt" else "ffprobe"
