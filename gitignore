@@ -1,0 +1,42 @@
+# Ambiente virtual Python
+.venv/
+venv/
+env/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Arquivos temporários do projeto
+temp/
+*.wav
+*.mp4
+*.mp3
+
+# ffmpeg binários (pesados demais para o GitHub)
+ffmpeg.exe
+ffplay.exe
+ffprobe.exe
+
+# Node
+node_modules/
+
+# Android build
+android/app/build/
+android/.gradle/
+android/app/.cxx/
+*.apk
+*.aab
+
+# Modelos de IA baixados
+*.bin
+*.safetensors
+
+# VS Code
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
