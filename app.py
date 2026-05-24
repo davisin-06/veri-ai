@@ -77,10 +77,14 @@ def download_video(url: str) -> str:
     if os.path.exists(caminho):
         os.remove(caminho)
 
+    cookies_path = os.path.join(BASE_DIR, "cookies.txt")
     opcoes = {
-        "outtmpl": os.path.join(PASTA_PROJETO, "video_analisado.%(ext)s"),
+        "outtmpl": caminho.replace(".mp4", ".%(ext)s"),
         "format": "bestvideo[height<=480]+bestaudio/bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
+        "ffmpeg_location": os.path.dirname(FFMPEG_BIN) if FFMPEG_BIN else BASE_DIR,
+        "socket_timeout": 30,
+        "cookiefile": cookies_path if os.path.exists(cookies_path) else None,
     }
 
     if FFMPEG_LOCATION:
